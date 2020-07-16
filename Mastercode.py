@@ -96,5 +96,5 @@ os.system(CASA_CONTAINER+' '+'casa --nologger -c stack_auto/Image_stacked_data.p
 os.system(SOURCE_FINDING_CONTAINER+' '+'wsclean -mem 100 -predict -name'+' '+PATH+'Imstacked'+' '+PATH+uvstacked_ms)
 
 #Plotting results
-#os.system(SOURCE_FINDING_CONTAINER+' '+'python stack_auto/plots_stacking_images.py')
-#os.system(SOURCE_FINDING_CONTAINER+' '+'python stack_auto/plot_stacking_results.py')
+os.system(SOURCE_FINDING_CONTAINER+' '+'python stack_auto/plots_stacking_images.py')
+os.system(SOURCE_FINDING_CONTAINER+' '+'python stack_auto/plot_stacking_results.py')
