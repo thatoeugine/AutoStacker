@@ -1,6 +1,7 @@
 # README
 
 Python module for simulating and stacking (uv and image) MeerKAT data. A modified version of [simuCLASS](https://bitbucket.org/itrharrison/simuclass/src/master/) is used in this module to simulate a radio interferometer sky model of the [TRECS](https://arxiv.org/abs/1805.05222) realist catalogue.
+
 ---
 
 ### Requirements:
