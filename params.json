@@ -34,7 +34,6 @@
 "imsize": 3136,
 "stampsize": 64,
 "cell": "1arcsec",
-"coords": "coords.csv",
 "stack_clean?": true,
 "weighting": "briggs",
 "robust": -0.5}}
