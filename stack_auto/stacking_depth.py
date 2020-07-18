@@ -42,7 +42,7 @@ def stacking_depth(cat,res_element, full_imagenoise):
     res_element: #int, resolution element per source
     full_imagenoise: #float, the total image noise of the full image
     """
-    cat_ = Table.read(path+cat, format = "ascii")
+    cat_ = Table.read(cat, format = "ascii")
     Number_of_sources = len(cat_["peak_flux"])
     stacking_depth = Number_of_sources/res_element
     stacking_depth = int(stacking_depth)
@@ -87,7 +87,7 @@ def stacking_depth(cat,res_element, full_imagenoise):
     
     
     # Making new model image consists of stacking depth sources plus all bright sources
-    trecs_cat_ = Table.read(path+cat, format = "ascii")
+    trecs_cat_ = Table.read(cat, format = "ascii")
     trecs_ra = trecs_cat_["ra_abs"]
     cat_ra = cat_["ra_abs"][indices]
     
@@ -135,7 +135,7 @@ if d["Stacking_params"]["FOV_size_cut?"] ==True: #cumputes FOV size cut for stac
     dec0_deg = d["Simulator_params"]["dec_deg0"]
 
     # Loading the RA and DEC from the T-RECS catalogue
-    data_file = Table.read(path+ d["Stacking_params"]["stacking_depth_skymodel_name"], format = "ascii")
+    data_file = Table.read(d["Stacking_params"]["stacking_depth_skymodel_name"], format = "ascii")
     RA,DEC = data_file["ra_abs"], data_file["dec_abs"]
 
 
@@ -169,11 +169,11 @@ if d["Stacking_params"]["FOV_size_cut?"] ==True: #cumputes FOV size cut for stac
     # Run stacking depth function
     stacking_depth("fov_cut_coords",
                    d["Stacking_params"]["res_element_per_source"],
-                   d["Stacking_params"]["im_noise"])
+                   d["Stacking_params"]["im_noise_Jy"])
     
     
     
 else:
     stacking_depth(d["Stacking_params"]["stacking_depth_skymodel_name"].encode("ascii","ignore"),
               d["Stacking_params"]["res_element_per_source"],
-              d["Stacking_params"]["im_noise"])
+              d["Stacking_params"]["im_noise_Jy"])
