@@ -61,7 +61,7 @@ print "MAD vis_stack=  -+ ", MAD, "uJ"
 
 #Plotting the resultant im_stacked image:
 
-data = pf.getdata(path+'GroundT_stacked_header_ref-model.fits')
+data = pf.getdata(path+'Imstacked-model.fits')
 f = aplpy.FITSFigure(path+'Imstacked-model.fits')
 f.show_grayscale(vmin=data.min(),vmax=data.max(), stretch='sqrt')
 #f.show_contour(image, levels=10)
