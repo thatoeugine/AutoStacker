@@ -14,19 +14,13 @@ the number of sources being observed.
 #--------------------------------------------------------------------------------------------
 
 import numpy as np
-import json
 from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import ascii
+import configparser
+import sys
 
-
-#Loading the parameters json file:
- 
-with open('params.json') as json_data:
-    d = json.load(json_data)
-
-path = d["Simulator_params"]["working_directory"].encode("ascii","ignore") 
 
 
 
@@ -51,13 +45,12 @@ def stacking_depth(cat,res_element, full_imagenoise):
     above_stacked_noise_level = full_imagenoise/np.sqrt(stacking_depth) # select sources below the noise BUT: above the stacked noise level
     
     #mask_faint = np.argwhere((5*above_stacked_noise_level<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=full_imagenoise*5))
-    mask_faint = np.argwhere((cat_["integrated_flux"]<=10e-6))
-    #mask_faint = np.argwhere((1e-4<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=1e-3))
+    #mask_faint = np.argwhere((cat_["integrated_flux"]<=10e-6))
+    mask_faint = np.argwhere((1e-4<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=1e-3))
     mask_faint = np.ravel(mask_faint) # flattening from 2D to 1D
 
-    #mask_bright = np.argwhere(cat_["integrated_flux"]>bright_min_flux) # bright sources
-    #mask_bright = np.ravel(mask_bright) # flattening from 2D to 1D
     mask_bright = cat_["integrated_flux"].argsort()[-100:][::-1] # selecting the indexes of the brightest 100 srcs
+    mask_bright = np.ravel(mask_bright) # flattening from 2D to 1D
 
     
     indices = []
@@ -68,11 +61,11 @@ def stacking_depth(cat,res_element, full_imagenoise):
         indices.append(value)
         faint_sources_only.append(value)
     
-    """
+    
     for j in range(mask_bright.size):
         value2 = np.random.choice(mask_bright)
         indices.append(value2)
-    """
+    
     
     ra = cat_["ra_abs"]
     dec = cat_["dec_abs"]
@@ -126,54 +119,61 @@ def stacking_depth(cat,res_element, full_imagenoise):
 
 
 
-if d["Stacking_params"]["FOV_size_cut?"] ==True: #cumputes FOV size cut for stacking across a certain FOV of interest
-    
-    FOV = d["Stacking_params"]["FOV_size_sqdeg"] #[deg]
-    diameter = d["Stacking_params"]["FOV_size_cut_value"]*FOV #[deg]
+if __name__=='__main__':
+    config = configparser.ConfigParser()
+    config.read(sys.argv[-1])
+    path = config.get('pipeline', 'data_path') 
 
-    ra0_deg = d["Simulator_params"]["ra_deg0"]
-    dec0_deg = d["Simulator_params"]["dec_deg0"]
+    if config.getboolean('stacking_params', 'FOV_size_cut') == True: #cumputes FOV size cut for stacking across a certain FOV of interest
 
-    # Loading the RA and DEC from the T-RECS catalogue
-    data_file = Table.read(d["Stacking_params"]["stacking_depth_skymodel_name"], format = "ascii")
-    RA,DEC = data_file["ra_abs"], data_file["dec_abs"]
+        FOV = config.getfloat('stacking_params', 'FOV_size_sqdeg') #[deg]
+        diameter = config.getfloat('stacking_params', 'FOV_size_cut_value')*FOV #[deg]
+
+        ra0_deg = config.getfloat('stacking_params', 'ra_deg0')
+        dec0_deg = config.getfloat('stacking_params', 'dec_deg0')
+
+        # Loading the RA and DEC from the T-RECS catalogue
+        data_file = Table.read(config.get('stacking_params', 'stacking_depth_skymodel_name'), format = "ascii")
+        RA,DEC = data_file["ra_abs"], data_file["dec_abs"]
 
 
-    # Calculating the angular separtion between the pointing center and the sources:
-    c1 = SkyCoord(ra0_deg*u.deg, dec0_deg*u.deg, frame='galactic')
-    c2 = SkyCoord(RA*u.deg, DEC*u.deg,  frame='galactic')
-    sep = c1.separation(c2)
+        # Calculating the angular separtion between the pointing center and the sources:
+        c1 = SkyCoord(ra0_deg*u.deg, dec0_deg*u.deg, frame='galactic')
+        c2 = SkyCoord(RA*u.deg, DEC*u.deg,  frame='galactic')
+        sep = c1.separation(c2)
 
-    # Mask for a certian diameter of observation 
-    mask = np.argwhere((sep.degree <= (diameter)))
-    mask = np.ravel(mask)
-    
-    #New RA and DEC textfile:
-    
-    data = Table({'ra_offset': data_file["ra_offset"][mask],
-                  'dec_offset': data_file["dec_offset"][mask],
-                  'dec_abs': DEC[mask],
-                   'ra_abs': RA[mask],
-                  'integrated_flux': data_file["integrated_flux"][mask],
-                  'size': data_file["size"][mask],
-                  'peak_flux': data_file["peak_flux"][mask],
-                 'e1': data_file["e1"][mask],
-                 'e2': data_file["e2"][mask],
-                 'g1': data_file["g1"][mask],
-                 'g2': data_file["g2"][mask]},
-                 names=['ra_offset','dec_offset','dec_abs','ra_abs','integrated_flux','size','peak_flux',\
-                       'e1','e2','g1','g2'])
-    
-    ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
-    
-    # Run stacking depth function
-    stacking_depth("fov_cut_coords",
-                   d["Stacking_params"]["res_element_per_source"],
-                   d["Stacking_params"]["im_noise_Jy"])
-    
-    
-    
-else:
-    stacking_depth(d["Stacking_params"]["stacking_depth_skymodel_name"].encode("ascii","ignore"),
-              d["Stacking_params"]["res_element_per_source"],
-              d["Stacking_params"]["im_noise_Jy"])
+        # Mask for a certian diameter of observation 
+        mask = np.argwhere((sep.degree <= (diameter)))
+        mask = np.ravel(mask)
+
+        #New RA and DEC textfile:
+
+        data = Table({'ra_offset': data_file["ra_offset"][mask],
+                      'dec_offset': data_file["dec_offset"][mask],
+                      'dec_abs': DEC[mask],
+                       'ra_abs': RA[mask],
+                      'integrated_flux': data_file["integrated_flux"][mask],
+                      'size': data_file["size"][mask],
+                      'peak_flux': data_file["peak_flux"][mask],
+                     'e1': data_file["e1"][mask],
+                     'e2': data_file["e2"][mask],
+                     'g1': data_file["g1"][mask],
+                     'g2': data_file["g2"][mask]},
+                     names=['ra_offset','dec_offset','dec_abs','ra_abs','integrated_flux','size','peak_flux',\
+                           'e1','e2','g1','g2'])
+
+        ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
+
+        # Run stacking depth function
+        stacking_depth("fov_cut_coords",
+                       config.getint('stacking_params', 'No._of_srcs'),
+                       config.getfloat('stacking_params', 'flux_density_Jy'),
+                       config.getfloat('stacking_params', 'src_size_arcsec'))
+
+
+
+    else:
+        stacking_depth(config.get('stacking_params', 'stacking_depth_skymodel_name'),
+                       config.getint('stacking_params', 'No._of_srcs'),
+                       config.getfloat('stacking_params', 'flux_density_Jy'),
+                       config.getfloat('stacking_params', 'src_size_arcsec'))
