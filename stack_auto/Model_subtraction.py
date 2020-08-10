@@ -19,32 +19,27 @@ import stacker.modsub
 import numpy as np
 import json
 import casa
-
-
-#Loading the parameters json file:
-
-with open('params.json') as json_data:
-    d = json.load(json_data)
-
-path = d["Simulator_params"]["working_directory"].encode("ascii","ignore") 
+import ConfigParser
 
 
 
-def stack_clean(vis_, imagename_, niter_, threshold_, imsize_, cell_, weightings, rbst):
-    """Function removes bright sources for stacking Clean depth. 
 
-    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    Parameters:
-    ----------
-    vis_: str # measurement set file name
-    imagename_: str # Full vis image name
-    niter_: int # number of cleaning iterations
-    threshold_: str # Flux level to stop cleaning, in units Jy
-    imsize_: int # the size of the image 
-    cell_: str # image pixel size in units of arcsecs
-    weightings: str # clean weighting
-    rbst: float # clean robustness
-    """
+if __name__=='__main__':
+    config = ConfigParser.ConfigParser()
+    config.read(sys.argv[-1])
+
+    print('CLEANing out bright sources ...........')
+
+    path = config.get('pipeline', 'data_path') 
+    vis_ = config.get('simulator_params', 'msfile_name')
+    imagename_ = config.get('casa_imager', 'imagename')
+    niter_ = config.getint('casa_imager', 'niter')
+    threshold_ = config.get('casa_imager', 'threshold')
+    imsize_ =  config.getint('casa_imager', 'imsize')
+    cell_ = config.get('casa_imager', 'cell')
+    weightings = config.get('casa_imager', 'weighting')
+    rbst = config.getfloat('casa_imager', 'robust')
+
     # Creating full image of the observation
     
     casa.clean(path+vis_, path+imagename_, imagermode='csclean',\
@@ -57,21 +52,3 @@ def stack_clean(vis_, imagename_, niter_, threshold_, imsize_, cell_, weightings
     # and subtract the component list from the data.
     stacker.modsub.modsub(path+'full.cl',path+vis_, path+'residual.ms',\
                           primarybeam='constant') # No pb since .model is not pbcorrected.
-
-
-
-#==================
-# Running tasks
-#==================
-
-print('CLEANing bright sources ...........')
-
-    
-stack_clean(d["Simulator_params"]["msfile_name"].encode("ascii","ignore"),
-            d["Imaging_params"]["imagename"].encode("ascii","ignore"),
-            d["Imaging_params"]["niter"],
-            d["Imaging_params"]["threshold"].encode("ascii","ignore"),
-            d["Imaging_params"]["imsize"],
-            d["Imaging_params"]["cell"].encode("ascii","ignore"),
-            d["Imaging_params"]["weighting"].encode("ascii","ignore"),
-            d["Imaging_params"]["robust"])
