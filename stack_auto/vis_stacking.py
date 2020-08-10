@@ -17,7 +17,9 @@ Uinversity of Pretoria, Department of Physics, Asronomy Research Group.
 import stacker 
 import stacker.uv
 import numpy as np
-import json
+import ConfigParser
+import sys
+
 
 
 
@@ -25,12 +27,7 @@ import json
 #                  Stacking by removing bright sources first.
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#Loading the parameters json file:
 
-with open('params.json') as json_data:
-    d = json.load(json_data)
-
-path = d["Simulator_params"]["working_directory"].encode("ascii","ignore") 
 
 def stack_clean(coords,FOV_size_cut,outputms):
     """Function stacks cleaned visibility file (i.e bright sources have been removed). 
@@ -85,17 +82,22 @@ def stack_Noclean(vis_,coords,FOV_size_cut,outputms):
 # Running tasks
 #==================
 
-print('visibility stacking ...........')
+if __name__=='__main__':
+    config = ConfigParser.ConfigParser()
+    config.read(sys.argv[-1])
 
+    print('visibility stacking ...........')
 
-if d["Imaging_params"]["stack_clean?"] ==True:
-    
-    stack_clean('coords.csv', d["Stacking_params"]["FOV_size_cut?"],
-                d["Imaging_params"]["stack_msfile_name"].encode("ascii","ignore"))
-    
-else:
-    
-    stack_Noclean(d["Simulator_params"]["msfile_name"].encode("ascii","ignore"),
-                  'coords.csv',
-                  d["Stacking_params"]["FOV_size_cut?"],
-                  d["Imaging_params"]["stack_msfile_name"].encode("ascii","ignore"))
+    path = config.get('pipeline', 'data_path') 
+
+    if config.getboolean('stacking_params', 'stack_clean') == True:
+
+        stack_clean('coords.csv', config.getboolean('stacking_params', 'FOV_size_cut'),
+                     config.get('casa_imager', 'stack_msfile_name'))
+
+    else:
+
+        stack_Noclean(config.get('simulator_params', 'msfile_name'),
+                      'coords.csv',
+                      config.getboolean('stacking_params', 'FOV_size_cut'),
+                      config.get('casa_imager', 'stack_msfile_name'))
