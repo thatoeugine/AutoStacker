@@ -15,19 +15,12 @@ and the sources sizes of choice.
 #--------------------------------------------------------------------------------------------
 
 import numpy as np
-import json
 from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import ascii
-
-
-#Loading the parameters json file:
- 
-with open('params.json') as json_data:
-    d = json.load(json_data)
-
-path = d["Simulator_params"]["working_directory"].encode("ascii","ignore") 
+import configparser
+import sys
 
 
 
@@ -98,58 +91,63 @@ def stacking_depth(cat,stackingdepth,flux,size):
 # Running tasks
 #==================
 
+if __name__=='__main__':
+    config = configparser.ConfigParser()
+    config.read(sys.argv[-1])
+    
+    path = config.get('pipeline', 'data_path') 
 
 
-if d["Stacking_params"]["FOV_size_cut?"] ==True: #cumputes FOV size cut for stacking across a certain FOV of interest
-    
-    FOV = d["Stacking_params"]["FOV_size_sqdeg"] #[deg]
-    diameter = d["Stacking_params"]["FOV_size_cut_value"]*FOV #[deg]
+    if config.getboolean('stacking_params', 'FOV_size_cut') == True: #cumputes FOV size cut for stacking across a certain FOV of interest
 
-    ra0_deg = d["Simulator_params"]["ra_deg0"]
-    dec0_deg = d["Simulator_params"]["dec_deg0"]
+        FOV = config.getfloat('stacking_params', 'FOV_size_sqdeg') #[deg]
+        diameter = config.getfloat('stacking_params', 'FOV_size_cut_value')*FOV #[deg]
 
-    # Loading the RA and DEC from the T-RECS catalogue
-    data_file = Table.read(d["Stacking_params"]["stacking_depth_skymodel_name"], format = "ascii")
-    RA,DEC = data_file["ra_abs"], data_file["dec_abs"]
+        ra0_deg = config.getfloat('stacking_params', 'ra_deg0')
+        dec0_deg = config.getfloat('stacking_params', 'dec_deg0')
+
+        # Loading the RA and DEC from the T-RECS catalogue
+        data_file = Table.read(config.get('stacking_params', 'stacking_depth_skymodel_name'), format = "ascii")
+        RA,DEC = data_file["ra_abs"], data_file["dec_abs"]
 
 
-    # Calculating the angular separtion between the pointing center and the sources:
-    c1 = SkyCoord(ra0_deg*u.deg, dec0_deg*u.deg, frame='galactic')
-    c2 = SkyCoord(RA*u.deg, DEC*u.deg,  frame='galactic')
-    sep = c1.separation(c2)
+        # Calculating the angular separtion between the pointing center and the sources:
+        c1 = SkyCoord(ra0_deg*u.deg, dec0_deg*u.deg, frame='galactic')
+        c2 = SkyCoord(RA*u.deg, DEC*u.deg,  frame='galactic')
+        sep = c1.separation(c2)
 
-    # Mask for a certian diameter of observation 
-    mask = np.argwhere((sep.degree <= (diameter)))
-    mask = np.ravel(mask)
-    
-    #New RA and DEC textfile:
-    
-    data = Table({'ra_offset': data_file["ra_offset"][mask],
-                  'dec_offset': data_file["dec_offset"][mask],
-                  'dec_abs': DEC[mask],
-                   'ra_abs': RA[mask],
-                  'integrated_flux': data_file["integrated_flux"][mask],
-                  'size': data_file["size"][mask],
-                  'peak_flux': data_file["peak_flux"][mask],
-                 'e1': data_file["e1"][mask],
-                 'e2': data_file["e2"][mask],
-                 'g1': data_file["g1"][mask],
-                 'g2': data_file["g2"][mask]},
-                 names=['ra_offset','dec_offset','dec_abs','ra_abs','integrated_flux','size','peak_flux',\
-                       'e1','e2','g1','g2'])
-    
-    ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
-    
-    # Run stacking depth function
-    stacking_depth("fov_cut_coords",
-                   d["Stacking_params"]["No._of_srcs"],
-                   d["Stacking_params"]["flux_density_Jy"],
-                   d["Stacking_params"]["src_size_arcsec"])
-    
-    
-    
-else:
-    stacking_depth(d["Stacking_params"]["stacking_depth_skymodel_name"].encode("ascii","ignore"),
-              d["Stacking_params"]["No._of_srcs"],
-              d["Stacking_params"]["flux_density_Jy"],
-              d["Stacking_params"]["src_size_arcsec"])
+        # Mask for a certian diameter of observation 
+        mask = np.argwhere((sep.degree <= (diameter)))
+        mask = np.ravel(mask)
+
+        #New RA and DEC textfile:
+
+        data = Table({'ra_offset': data_file["ra_offset"][mask],
+                      'dec_offset': data_file["dec_offset"][mask],
+                      'dec_abs': DEC[mask],
+                       'ra_abs': RA[mask],
+                      'integrated_flux': data_file["integrated_flux"][mask],
+                      'size': data_file["size"][mask],
+                      'peak_flux': data_file["peak_flux"][mask],
+                     'e1': data_file["e1"][mask],
+                     'e2': data_file["e2"][mask],
+                     'g1': data_file["g1"][mask],
+                     'g2': data_file["g2"][mask]},
+                     names=['ra_offset','dec_offset','dec_abs','ra_abs','integrated_flux','size','peak_flux',\
+                           'e1','e2','g1','g2'])
+
+        ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
+
+        # Run stacking depth function
+        stacking_depth("fov_cut_coords",
+                       config.getint('stacking_params', 'No._of_srcs'),
+                       config.getfloat('stacking_params', 'flux_density_Jy'),
+                       config.getfloat('stacking_params', 'src_size_arcsec'))
+
+
+
+    else:
+        stacking_depth(config.get('stacking_params', 'stacking_depth_skymodel_name'),
+                       config.getint('stacking_params', 'No._of_srcs'),
+                       config.getfloat('stacking_params', 'flux_density_Jy'),
+                       config.getfloat('stacking_params', 'src_size_arcsec'))
