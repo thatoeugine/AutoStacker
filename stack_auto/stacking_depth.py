@@ -166,7 +166,6 @@ if __name__=='__main__':
 
         # Run stacking depth function
         stacking_depth("fov_cut_coords",
-                       config.getint('stacking_params', 'No._of_srcs'),
                        config.getfloat('stacking_params', 'flux_density_Jy'),
                        config.getfloat('stacking_params', 'src_size_arcsec'))
 
