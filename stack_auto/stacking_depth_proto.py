@@ -148,5 +148,6 @@ if __name__=='__main__':
 
     else:
         stacking_depth(config.get('stacking_params', 'stacking_depth_skymodel_name'),
+                       config.getint('stacking_params', 'No._of_srcs'),
                        config.getfloat('stacking_params', 'flux_density_Jy'),
                        config.getfloat('stacking_params', 'src_size_arcsec'))
