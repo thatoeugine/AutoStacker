@@ -35,7 +35,7 @@ if config.getboolean('pipeline', 'dosimulate'):
 from stack_auto.Stacker import runFoVcut, runImstack, runImageStackData, runStack_clean, runMoveVis, runPlotStackingResults, runPlotStackingImages, runStackingDepth, runStackingDepthProto, runUVStack
 
 if config.getboolean('stacking_params', 'No._of_srcs_of_choice') == True:
-    #runStackingDepthProto(config, sys.argv[1])
+    runStackingDepthProto(config, sys.argv[1])
     os.system(KERN3_CONTAINER+' '+'python simuclass/simuCLASS.py'+' '+sys.argv[1])
     os.system(SOURCE_FINDING_CONTAINER+' '+'python simuclass/Edit_to_Tigger_frendly.py'+' '+PATH+skymodel)
     
@@ -71,30 +71,33 @@ runMoveVis(config, sys.argv[1])
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                                       Stacking
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-if config.getboolean('stacking_params', 'stack_clean') == True:
-    runStack_clean(config, sys.argv[1])
+if config.getboolean('pipeline', 'dostacking') == True:
     
+    if config.getboolean('stacking_params', 'stack_clean') == True:
+        runStack_clean(config, sys.argv[1])
+
+    else:
+        pass
+
+
+            #image stacking:
+    runImstack(config, sys.argv[1])
+
+            #vis stacking:
+    #os.system('CUDA_VISIBLE_DEVICES=0')
+
+    runUVStack(config, sys.argv[1])
+
+    runImageStackData(config, sys.argv[1])
+
+    ####
+        #Predicting the visibilities to uv-stacked for comparison with Im-stacked
+    ####
+    os.system(SOURCE_FINDING_CONTAINER+' '+'wsclean -mem 100 -predict -name'+' '+PATH+'Imstacked'+' '+PATH+uvstacked_ms)
+
+    #Plotting results
+    runPlotStackingImages(config, sys.argv[1])
+    runPlotStackingResults(config, sys.argv[1])
+
 else:
-    pass
-
-
-        #image stacking:
-runImstack(config, sys.argv[1])
-
-        #vis stacking:
-#os.system('CUDA_VISIBLE_DEVICES=0')
-
-runUVStack(config, sys.argv[1])
-
-runImageStackData(config, sys.argv[1])
-
-####
-    #Predicting the visibilities to uv-stacked for comparison with Im-stacked
-####
-os.system(SOURCE_FINDING_CONTAINER+' '+'wsclean -mem 100 -predict -name'+' '+PATH+'Imstacked'+' '+PATH+uvstacked_ms)
-
-#Plotting results
-runPlotStackingImages(config, sys.argv[1])
-runPlotStackingResults(config, sys.argv[1])
-
+    'Simulation Complete'
