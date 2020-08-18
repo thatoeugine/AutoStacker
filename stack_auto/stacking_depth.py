@@ -94,7 +94,7 @@ def stacking_depth(cat,res_element, full_imagenoise):
 
     print>> outfile, '#lon            lat            size           flux            e1             e2             gamma1         gamma2'
 
-    for m in indices:
+    for m in indices2:
         srcline ='%.10f           %.10f            %.10f           %.10f           %.10f       %.10f             %.10f             %.10f'%(trecs_cat_['ra_offset'][m],trecs_cat_['dec_offset'][m],trecs_cat_['size'][m],(trecs_cat_['integrated_flux'][m])*1e3,trecs_cat_['e1'][m],trecs_cat_['e2'][m],trecs_cat_['g1'][m],trecs_cat_['g2'][m])
         print>> outfile, srcline
 
@@ -129,8 +129,8 @@ if __name__=='__main__':
         FOV = config.getfloat('stacking_params', 'FOV_size_sqdeg') #[deg]
         diameter = config.getfloat('stacking_params', 'FOV_size_cut_value')*FOV #[deg]
 
-        ra0_deg = config.getfloat('stacking_params', 'ra_deg0')
-        dec0_deg = config.getfloat('stacking_params', 'dec_deg0')
+        ra0_deg = config.getfloat('simulator_params', 'ra_deg0')
+        dec0_deg = config.getfloat('simulator_params', 'dec_deg0')
 
         # Loading the RA and DEC from the T-RECS catalogue
         data_file = Table.read(config.get('stacking_params', 'stacking_depth_skymodel_name'), format = "ascii")
@@ -165,13 +165,13 @@ if __name__=='__main__':
         ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
 
         # Run stacking depth function
-        stacking_depth("fov_cut_coords",
-                       config.getfloat('stacking_params', 'flux_density_Jy'),
-                       config.getfloat('stacking_params', 'src_size_arcsec'))
+        stacking_depth('fov_cut_coords.txt',
+                       config.getfloat('stacking_params', 'res_element_per_source'),
+                       config.getfloat('stacking_params', 'im_noise_Jy'))
 
 
 
     else:
         stacking_depth(config.get('stacking_params', 'stacking_depth_skymodel_name'),
-                       config.getfloat('stacking_params', 'flux_density_Jy'),
-                       config.getfloat('stacking_params', 'src_size_arcsec'))
+                       config.getfloat('stacking_params', 'res_element_per_source'),
+                       config.getfloat('stacking_params', 'im_noise_Jy'))
