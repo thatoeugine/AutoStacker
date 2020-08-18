@@ -26,7 +26,7 @@ modelimage = modelimage_.replace("-model.fits"," ")
 #                                     Simulating with simms+meqtrees+Simuclass
 #======================================================================================================
 
-if config.getboolean('pipeline', 'dosimulate'):
+if config.getboolean('pipeline', 'dosimulate') == True:
     from stack_auto.simple_simulate.Simulator import runSimulate, runAddNoise
     runSimulate(config, sys.argv[1])
     runAddNoise(config, sys.argv[1])
