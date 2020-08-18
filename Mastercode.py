@@ -25,9 +25,9 @@ modelimage = modelimage_.replace("-model.fits"," ")
 #                                     Simulating with simms+meqtrees+Simuclass
 #======================================================================================================
 from stack_auto.Stacker import runFoVcut, runImstack, runImageStackData, runStack_clean, runMoveVis, runPlotStackingResults, runPlotStackingImages, runStackingDepth, runStackingDepthProto, runUVStack
+from stack_auto.simple_simulate.Simulator import runSimulate, runAddNoise
 
 if config.getboolean('pipeline', 'dosimulate') == True:
-    from stack_auto.simple_simulate.Simulator import runSimulate, runAddNoise
     runSimulate(config, sys.argv[1])
     runAddNoise(config, sys.argv[1])
 
