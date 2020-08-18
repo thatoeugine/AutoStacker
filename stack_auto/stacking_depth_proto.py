@@ -103,8 +103,8 @@ if __name__=='__main__':
         FOV = config.getfloat('stacking_params', 'FOV_size_sqdeg') #[deg]
         diameter = config.getfloat('stacking_params', 'FOV_size_cut_value')*FOV #[deg]
 
-        ra0_deg = config.getfloat('stacking_params', 'ra_deg0')
-        dec0_deg = config.getfloat('stacking_params', 'dec_deg0')
+        ra0_deg = config.getfloat('simulator_params', 'ra_deg0')
+        dec0_deg = config.getfloat('simulator_params', 'dec_deg0')
 
         # Loading the RA and DEC from the T-RECS catalogue
         data_file = Table.read(config.get('stacking_params', 'stacking_depth_skymodel_name'), format = "ascii")
@@ -139,7 +139,7 @@ if __name__=='__main__':
         ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
 
         # Run stacking depth function
-        stacking_depth("fov_cut_coords",
+        stacking_depth('fov_cut_coords.txt',
                        config.getint('stacking_params', 'No._of_srcs'),
                        config.getfloat('stacking_params', 'flux_density_Jy'),
                        config.getfloat('stacking_params', 'src_size_arcsec'))
