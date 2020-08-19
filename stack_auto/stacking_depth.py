@@ -44,9 +44,8 @@ def stacking_depth(cat,res_element, full_imagenoise):
     ## Making sure Not dominated by faint sources only, but including bright soirces too:
     above_stacked_noise_level = full_imagenoise/np.sqrt(stacking_depth) # select sources below the noise BUT: above the stacked noise level
     
-    #mask_faint = np.argwhere((5*above_stacked_noise_level<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=full_imagenoise*5))
+    mask_faint = np.argwhere((5*above_stacked_noise_level<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=full_imagenoise*5))
     #mask_faint = np.argwhere((cat_["integrated_flux"]<=10e-6))
-    mask_faint = np.argwhere((1e-4<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=1e-3))
     mask_faint = np.ravel(mask_faint) # flattening from 2D to 1D
 
     mask_bright = cat_["integrated_flux"].argsort()[-100:][::-1] # selecting the indexes of the brightest 100 srcs
@@ -89,12 +88,17 @@ def stacking_depth(cat,res_element, full_imagenoise):
         value3 = np.argwhere(cat_ra[l] == trecs_ra)
         indices2.append(value3)
         
-
+    indices_true = []
+    for e in range(len(indices2)):
+        value4 = indices2[e][0][0]
+        indices_true.append(value4)
+        
+    
     outfile = open('simuclass/simuCLASS/T_recs_catalogues/catalogue_SFGs_stacking_depth.txt', 'w')
 
     print>> outfile, '#lon            lat            size           flux            e1             e2             gamma1         gamma2'
 
-    for m in indices2:
+    for m in indices_true:
         srcline ='%.10f           %.10f            %.10f           %.10f           %.10f       %.10f             %.10f             %.10f'%(trecs_cat_['ra_offset'][m],trecs_cat_['dec_offset'][m],trecs_cat_['size'][m],(trecs_cat_['integrated_flux'][m])*1e3,trecs_cat_['e1'][m],trecs_cat_['e2'][m],trecs_cat_['g1'][m],trecs_cat_['g2'][m])
         print>> outfile, srcline
 
@@ -165,7 +169,7 @@ if __name__=='__main__':
         ascii.write(data, path +'fov_cut_coords.txt', format='csv', fast_writer=False, overwrite=True) 
 
         # Run stacking depth function
-        stacking_depth('fov_cut_coords.txt',
+        stacking_depth(path+'fov_cut_coords.txt',
                        config.getfloat('stacking_params', 'res_element_per_source'),
                        config.getfloat('stacking_params', 'im_noise_Jy'))
 
