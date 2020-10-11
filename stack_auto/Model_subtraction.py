@@ -1,14 +1,11 @@
 """
 @author: Thato Manamela
-
 Uinversity of Pretoria, Department of Physics, Asronomy Research Group.
-
 """
 #____________________________________________________________________________________________
 
 """
 # This module performs visibility stacking of radio data
-
 """
 #--------------------------------------------------------------------------------------------
 
