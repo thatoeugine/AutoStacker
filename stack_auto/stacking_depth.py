@@ -1,15 +1,12 @@
 """
 @author: Thato Manamela
-
 Uinversity of Pretoria, Department of Physics, Asronomy Research Group.
-
 """
 #____________________________________________________________________________________________
 
 """
 # This module decides on the stacking depth, on the given telescopes resolution element and 
 the number of sources being observed. 
-
 """
 #--------------------------------------------------------------------------------------------
 
@@ -44,12 +41,12 @@ def stacking_depth(cat,res_element, full_imagenoise):
     ## Making sure Not dominated by faint sources only, but including bright soirces too:
     above_stacked_noise_level = full_imagenoise/np.sqrt(stacking_depth) # select sources below the noise BUT: above the stacked noise level
     
-    mask_faint = np.argwhere((5*above_stacked_noise_level<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=full_imagenoise*5))
-    #mask_faint = np.argwhere((cat_["integrated_flux"]<=10e-6))
+    #mask_faint = np.argwhere((5*above_stacked_noise_level<=cat_["integrated_flux"])&(cat_["integrated_flux"]<=full_imagenoise*5))
+    mask_faint = np.argwhere((cat_["integrated_flux"]<=0.1e-6)) #stacking 5 factors below the noise
     mask_faint = np.ravel(mask_faint) # flattening from 2D to 1D
 
-    mask_bright = cat_["integrated_flux"].argsort()[-100:][::-1] # selecting the indexes of the brightest 100 srcs
-    mask_bright = np.ravel(mask_bright) # flattening from 2D to 1D
+    #mask_bright = cat_["integrated_flux"].argsort()[-100:][::-1] # selecting the indexes of the brightest 100 srcs
+    #mask_bright = np.ravel(mask_bright) # flattening from 2D to 1D
 
     
     indices = []
@@ -60,11 +57,11 @@ def stacking_depth(cat,res_element, full_imagenoise):
         indices.append(value)
         faint_sources_only.append(value)
     
-    
+    """
     for j in range(mask_bright.size):
         value2 = np.random.choice(mask_bright)
         indices.append(value2)
-    
+    """
     
     ra = cat_["ra_abs"]
     dec = cat_["dec_abs"]
