@@ -20,6 +20,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 import configparser
+import sys
 
 
 if __name__=='__main__':
@@ -36,8 +37,9 @@ if __name__=='__main__':
     dec0_deg = config.getfloat('simulator_params', 'dec_deg0')
 
     # Loading the RA and DEC from the T-RECS catalogue
-    data_file = Table.read(path+ config.get('stacking_params', 'stacking_depth_skymodel_name')
-    RA,DEC = data_file["ra_abs"], data_file["dec_abs"]
+    data_file = Table.read(path+ config.get('stacking_params', 'FOV_size_skyodel'),format = 'ascii')
+    RA = data_file["ra_abs"]
+    DEC = data_file["dec_abs"]
 
 
     # Calculating the angular separtion between the pointing center
