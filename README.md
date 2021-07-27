@@ -11,7 +11,7 @@ Python module for simulating and stacking (uv and image) MeerKAT data. A modifie
 
 # To run:
 ```python
-python Mastercode.py stackingdepth.in
+python Mastercode.py stackingdepth.ini
 ```
 ---
 
